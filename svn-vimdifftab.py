@@ -52,6 +52,14 @@ def copy_if_tmp(file_dir, file_name, file_description):
     elif not os.path.isabs(file_name): return file_name
 
     file_name_out = os.path.join(file_dir, file_name_base)
+    if os.path.exists(file_name_out):
+        suffix = 0
+        while True:
+            suffix += 1
+            base, ext = os.path.splitext(file_name_out)
+            file_name_out = base + '.' + str(suffix) + ext
+            if not os.path.exists(file_name_out):
+                break
     shutil.copy(file_name, file_name_out)
     return file_name_out
 
