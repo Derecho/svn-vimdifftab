@@ -32,7 +32,7 @@
 # policies, either expressed or implied, of Chris Pick.
 
 
-import sys, re, subprocess, os, os.path, tempfile, shutil
+import sys, re, subprocess, os, os.path, tempfile, time, shutil
 
 def sanitize(file_description):
     file_description = re.sub(r'\s+', r'\ ', file_description)
@@ -59,6 +59,9 @@ def copy_if_tmp(file_dir, file_name, file_description):
 manifest_file_name = os.getenv('SVN_VIMDIFFTAB')
 if manifest_file_name != None:
     # TODO use lockfile
+    while os.path.exists(manifest_file_name + '.lock'):
+        time.sleep(0.01)
+    os.mknod(manifest_file_name + '.lock')
 
     file_dir = os.path.dirname(manifest_file_name)
 
@@ -73,6 +76,10 @@ if manifest_file_name != None:
     manifest_file.write(file_description1 + '\n' + file_description2 + '\n'
             + file_name1 + '\n' + file_name2 + '\n');
 
+    manifest_file.flush()
+    os.fsync(manifest_file.fileno())
+    manifest_file.close()
+    os.remove(manifest_file_name + '.lock')
     sys.exit(0)
 
 # create the dir and pass it to the children
